@@ -1,35 +1,31 @@
+using Microsoft.Extensions.Hosting;
+
 namespace lab1;
 
-class Game {
-    private Player _player1;
-    private Player _player2;
-    private CardDeck _deck;
-    private ICardShuffler _shuffler;
-
-    public Game(Player player1, Player player2, CardDeck deck, ICardShuffler shuffler) {
-        _player1 = player1;
-        _player2 = player2;
-        _deck = deck;
-        _shuffler = shuffler;
+public class Game : IHostedService {
+    private readonly CollisiumSandbox _sandbox;
+    public Game(CollisiumSandbox sandbox) {
+        _sandbox = sandbox;
     }
 
-    public bool Play() {
-        _deck = _shuffler.Shuffle(_deck);
-        // Console.WriteLine(_deck);
-        DealCards();
-        // foreach (var card  in _player1.GetCards()) {
-        //     Console.Write(card + " ");
-        // }
-        // Console.WriteLine();
-        // foreach (var card  in _player2.GetCards()) {
-        //     Console.Write(card + " ");
-        // }
-        // Console.WriteLine();
-        return _player1.GetCards()[_player1.GetStrategy().Pick()] == _player2.GetCards()[_player2.GetStrategy().Pick()];
+    public Task StartAsync(CancellationToken cancellationToken) {
+        Console.WriteLine("startAsync");
+        const int numExperiments = 1_000_000;
+
+        var winCount = 0;
+        for (var i = 0; i < numExperiments; i++) {
+            var gameResult = _sandbox.Play();
+            if (gameResult) {
+                winCount++;
+            }
+        }
+    
+        Console.WriteLine(winCount);
+        Console.WriteLine((double)winCount/numExperiments);
+        return Task.CompletedTask;
     }
 
-    private void DealCards() {
-        _player1.SetCards(_deck.GetCards().GetRange(0, 16));
-        _player2.SetCards(_deck.GetCards().GetRange(16, 16));
+    public Task StopAsync(CancellationToken cancellationToken) {
+        return Task.CompletedTask;
     }
 }

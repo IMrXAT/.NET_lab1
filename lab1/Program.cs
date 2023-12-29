@@ -1,26 +1,34 @@
-﻿using Strategy;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Players;
+using Shuffler;
+using Strategy;
 
-namespace lab1; 
+namespace lab1;
 
-class Solution {
-    static void Main(string[] args) {
-        const int numExperiments = 1_000_000;
-        IStrategy firstCardStrategy = new FirstCardStrategy();
-        IStrategy secondCardStrategy = new SecondStrategy();
-        
-        var player1 = new Player(firstCardStrategy);
-        var player2 = new Player(secondCardStrategy);
+static class Solution {
 
-        var deck = new CardDeck();
-
-        var shaffler = new FisherCardShuffler();
-        var gameSession = new Game(player1, player2, deck, shaffler);
-        int winCount = 0;
-        for (int i = 0; i < numExperiments; i++) {
-            if (gameSession.Play()) {
-                winCount++;
-            }
-        }
-        System.Console.WriteLine((double)winCount/numExperiments);
+    public static void Main(string[] args) {
+        CreateHostBuilder(args).Build().Run();
+        Console.WriteLine("here");
     }
+
+    private static IHostBuilder CreateHostBuilder(string[] args) {
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices((_, services) => {
+                services.AddHostedService<Game>();
+                services.AddScoped<CollisiumSandbox>();
+                services.AddScoped<Game>();
+                services.AddScoped<ICardShuffler, FisherCardShuffler>();
+                services.AddScoped<Player>();
+                services.AddScoped<Player>();
+                services.AddScoped<IStrategy, FirstCardStrategy>();
+                services.AddScoped<IStrategy, FirstCardStrategy>();
+            });
+    }
+
+
+    // public static void Main(string[] args) {
+   
+    // }
 }
